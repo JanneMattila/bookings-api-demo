@@ -15,6 +15,7 @@ namespace BookingApi
 
 			// TODO: Set following variables correctly
 			var clientId = "";
+			var loginHint = "in upn etc.";
 
 			var scopes = new List<string> {
 				"User.Read", "Bookings.Read.All",
@@ -25,8 +26,25 @@ namespace BookingApi
 				.WithRedirectUri("http://localhost")
 				.Build();
 
-			var authenticationResult = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
-			var accessToken = authenticationResult.AccessToken;
+			var accessToken = string.Empty;
+			var expires = DateTimeOffset.UtcNow;
+			AuthenticationResult authenticationResult;
+
+			try
+			{
+				authenticationResult = await app.AcquireTokenSilent(scopes, loginHint).ExecuteAsync();
+			}
+			catch (MsalUiRequiredException)
+			{
+				authenticationResult = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
+			}
+
+			accessToken = authenticationResult.AccessToken;
+			expires = authenticationResult.ExpiresOn;
+
+			Console.WriteLine("Expires:");
+			Console.WriteLine(expires);
+			Console.WriteLine(accessToken);
 
 			var graphserviceClient = new GraphServiceClient(
 				new DelegateAuthenticationProvider(

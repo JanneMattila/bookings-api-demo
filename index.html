@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookings API Demo</title>
+    <script type="text/javascript" src="https://alcdn.msauth.net/lib/1.2.1/js/msal.min.js" integrity="sha384-Z4L5heyGO9VZ/MBCDx9GRtQW50Hrmp32ByIKuqwFesWyB+MDNy9ueVgclolfwj1Q" crossorigin="anonymous"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <style type="text/css">
+        html,
+        body,
+        input,
+        select,
+        textarea {
+            padding-top: 0px;
+            padding-bottom: 10px;
+            padding-left: 20px;
+            font-family: 'Segoe UI Light', sans-serif;
+            font-size: 20px;
+            text-align: left;
+            margin: 0 auto;
+            width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <h1>
+        Bookings API Demo
+    </h1>
+
+    <div>
+        <button id="setupOpen" onclick="showSetup();">➕</button>
+        <button id="setupClose" onclick="hideSetup();" style="display:none">➖</button>
+    </div>
+    <div id="setup" style="display:none">
+        ClientId:
+        <input id="clientId" type="text" title="clientId" />
+
+        TenantId:
+        <input id="tenantId" type="text" title="tenantId" />
+        <br /><br />
+        <input id="saveConfigurationButton" type="button" value="Save" onclick="saveConfiguration();" />
+        <hr />
+    </div>
+    <br />
+    <div id="afterConfiguration" style="display:none">
+        Project name:
+        <input id="projectName" type="text" title="Project name" />
+
+        Configuration file:
+        <input id="configurationFile" type="file" title="Configuration file" />
+
+        Template:
+        <select id="template">
+            <option value="">--Please choose an option--</option>
+            <option value="s">Simple template</option>
+            <option value="m">Medium template</option>
+            <option value="l">Complex template</option>
+        </select>
+        <br /><br />
+        <input id="createButton" type="button" value="Create" onclick="create();" />
+    </div>
+    <br />
+    <br />
+    <div id="log"></div>
+
+    <script>
+        let clientId = "";
+        let tenantId = "";
+
+        let accessToken = "";
+
+        let project = {};
+
+        function clearLog() {
+            document.getElementById("log").innerHTML = "";
+        }
+
+        function appendLog(message) {
+            document.getElementById("log").innerHTML = 
+                message + "<br />" + document.getElementById("log").innerHTML;
+        }
+
+        function showSetup() {
+            document.getElementById('setupOpen').style.display = 'none';
+            document.getElementById('setupClose').style.display = '';
+            document.getElementById('setup').style.display = '';
+        }
+
+        function hideSetup() {
+            document.getElementById('setupOpen').style.display = '';
+            document.getElementById('setupClose').style.display = 'none';
+            document.getElementById('setup').style.display = 'none';
+        }
+
+        function loadConfiguration() {
+            clientId = localStorage.getItem("clientId");
+            tenantId = localStorage.getItem("tenantId");
+
+            if (clientId == null || tenantId == null ||
+                clientId.length == 0 || tenantId.length == 0) {
+                showSetup();
+                return;
+            }
+            else {
+                document.getElementById('clientId').value = clientId;
+                document.getElementById('tenantId').value = tenantId;
+                hideSetup();
+                document.getElementById('afterConfiguration').style.display = '';
+
+                processConfiguration();
+            }
+        }
+
+        function saveConfiguration() {
+            clientId = document.getElementById('clientId').value;
+            tenantId = document.getElementById('tenantId').value;
+            localStorage.setItem("clientId", clientId);
+            localStorage.setItem("tenantId", tenantId);
+            loadConfiguration();
+        }
+
+        loadConfiguration();
+
+        function create() {
+          clearLog();
+        }
+
+        function processConfiguration() {
+            accessTokenRequest = {
+                scopes: [
+                    "User.Read",
+                    "Bookings.Manage.All",
+                    "BookingsAppointment.ReadWrite.All"
+                ]
+            }
+
+            const config = {
+                auth: {
+                    clientId: clientId,
+                    authority: "https://login.microsoftonline.com/" + tenantId,
+                }
+            }
+
+            userAgentApplication = new Msal.UserAgentApplication(config);
+            function authCallback(error, response) {
+                // Handle redirect responses
+                if (error) {
+                    console.log(error);
+                }
+                else {
+                    if (response.tokenType === "id_token") {
+                        console.log('id_token acquired at: ' + new Date().toString());
+                    }
+                    else if (response.tokenType === "access_token") {
+                        console.log('access_token acquired at: ' + new Date().toString());
+                        accessToken = response.accessToken;
+                        afterLogin(response.account);
+                    }
+                    else {
+                        console.log("token type is:" + response.tokenType);
+                    }
+                }
+            }
+
+            userAgentApplication.handleRedirectCallback(authCallback);
+
+            userAgentApplication.acquireTokenSilent(accessTokenRequest).then(function (accessTokenResponse) {
+                // Acquire token silent success
+                // Call API with token
+                console.log(accessTokenResponse);
+                accessToken = accessTokenResponse.accessToken;
+                afterLogin(accessTokenResponse.account);
+            }).catch(function (error) {
+                // Acquire token silent failure, and send an interactive request
+                if (error.errorMessage.indexOf("User login is required") !== -1) {
+                    userAgentApplication.acquireTokenRedirect(accessTokenRequest);
+                }
+            });
+        }
+
+        function login() {
+            userAgentApplication.loginRedirect(accessTokenRequest);
+        }
+    </script>
+</body>
+</html>

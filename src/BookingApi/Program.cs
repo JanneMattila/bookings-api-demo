@@ -1,8 +1,6 @@
-﻿using Microsoft.Graph;
-using Microsoft.Identity.Client;
+﻿using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace BookingApi
@@ -15,19 +13,20 @@ namespace BookingApi
 
 			// TODO: Set following variables correctly
 			var clientId = "";
-			var loginHint = "in upn etc.";
+			var tenantId = "";
+			var loginHint = "booking-service-account@demodomain.onmicrosoft.com";
 
-			var scopes = new List<string> {
+			var scopes = new List<string> 
+			{
 				"User.Read", "Bookings.Read.All",
 				"Bookings.Manage.All", "Bookings.ReadWrite.All",
 				"BookingsAppointment.ReadWrite.All", "offline_access"
 			};
 			var app = PublicClientApplicationBuilder.Create(clientId)
+				.WithTenantId(tenantId)
 				.WithRedirectUri("http://localhost")
 				.Build();
-
-			var accessToken = string.Empty;
-			var expires = DateTimeOffset.UtcNow;
+			TokenCacheHelper.EnableSerialization(app.UserTokenCache);
 			AuthenticationResult authenticationResult;
 
 			try
@@ -39,21 +38,12 @@ namespace BookingApi
 				authenticationResult = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
 			}
 
-			accessToken = authenticationResult.AccessToken;
-			expires = authenticationResult.ExpiresOn;
+			var accessToken = authenticationResult.AccessToken;
+			var expires = authenticationResult.ExpiresOn;
 
 			Console.WriteLine("Expires:");
 			Console.WriteLine(expires);
 			Console.WriteLine(accessToken);
-
-			var graphserviceClient = new GraphServiceClient(
-				new DelegateAuthenticationProvider(
-					(requestMessage) =>
-					{
-						requestMessage.Headers.Authorization =
-							new AuthenticationHeaderValue("Bearer", accessToken);
-						return Task.FromResult(0);
-					}));
 		}
 	}
 }

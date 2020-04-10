@@ -22,9 +22,35 @@ GET {{endpoint}}/bookingBusinesses/{{id}}/appointments HTTP/1.1
 Content-type: application/json
 Authorization: Bearer {{accessToken}}
 
-### Fetch first appointments
+### Fetch first appointment
 # @name appointment
-@appointmentId = {{appointment.response.body.value[0].id}}
+@appointmentId = {{appointments.response.body.value[0].id}}
 GET {{endpoint}}/bookingBusinesses/{{id}}/appointments/{{appointmentId}} HTTP/1.1
 Content-type: application/json
 Authorization: Bearer {{accessToken}}
+
+### Fetch services
+# @name services
+@id = {{business.response.body.id}}
+GET {{endpoint}}/bookingBusinesses/{{id}}/services HTTP/1.1
+Content-type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Fetch first service
+# @name service
+@serviceid = {{services.response.body.value[0].id}}
+GET {{endpoint}}/bookingBusinesses/{{id}}/services/{{serviceid}} HTTP/1.1
+Content-type: application/json
+Authorization: Bearer {{accessToken}}
+
+### Update first service
+# @name service
+@serviceid = {{services.response.body.value[0].id}}
+PATCH {{endpoint}}/bookingBusinesses/{{id}}/services/{{serviceid}} HTTP/1.1
+Content-type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "@odata.type":"#microsoft.graph.bookingService",
+    "defaultDuration":"PT30M"
+}

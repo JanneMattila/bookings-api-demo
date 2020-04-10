@@ -44,21 +44,27 @@
     </div>
     <br />
     <div id="afterConfiguration" style="display:none">
-        Project name:
-        <input id="projectName" type="text" title="Project name" />
-
-        Configuration file:
-        <input id="configurationFile" type="file" title="Configuration file" />
-
-        Template:
-        <select id="template">
-            <option value="">--Please choose an option--</option>
-            <option value="s">Simple template</option>
-            <option value="m">Medium template</option>
-            <option value="l">Complex template</option>
-        </select>
-        <br /><br />
-        <input id="createButton" type="button" value="Create" onclick="create();" />
+        <div id="user">Anonymous</div>
+        <div id="beforeLogin">
+            <input id="loginButton" type="button" value="Login" onclick="login();" />
+        </div>
+        <div id="afterLogin" style="display: none">
+            Project name:
+            <input id="projectName" type="text" title="Project name" />
+    
+            Configuration file:
+            <input id="configurationFile" type="file" title="Configuration file" />
+    
+            Template:
+            <select id="template">
+                <option value="">--Please choose an option--</option>
+                <option value="s">Simple template</option>
+                <option value="m">Medium template</option>
+                <option value="l">Complex template</option>
+            </select>
+            <br /><br />
+            <input id="createButton" type="button" value="Create" onclick="create();" />
+        </div>        
     </div>
     <br />
     <br />
@@ -127,11 +133,15 @@
         }
 
         function processConfiguration() {
+            // All scopes are under:
+            // https://graph.microsoft.com/
             accessTokenRequest = {
                 scopes: [
                     "User.Read",
-                    "Bookings.Manage.All",
-                    "BookingsAppointment.ReadWrite.All"
+                    "Bookings.Read.All",
+                    // "Bookings.Manage.All",
+                    //"Bookings.ReadWrite.All",
+                    //"BookingsAppointment.ReadWrite.All"
                 ]
             }
 
@@ -181,6 +191,12 @@
 
         function login() {
             userAgentApplication.loginRedirect(accessTokenRequest);
+        }
+
+        function afterLogin(account) {
+            document.getElementById("beforeLogin").style.display = "none";
+            document.getElementById("afterLogin").style.display = "";
+            document.getElementById("user").innerText = account.name;
         }
     </script>
 </body>

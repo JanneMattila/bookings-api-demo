@@ -133,15 +133,13 @@
         }
 
         function processConfiguration() {
-            // All scopes are under:
-            // https://graph.microsoft.com/
             accessTokenRequest = {
                 scopes: [
-                    "User.Read",
-                    "Bookings.Read.All",
-                    // "Bookings.Manage.All",
-                    //"Bookings.ReadWrite.All",
-                    //"BookingsAppointment.ReadWrite.All"
+                    "https://graph.microsoft.com/User.Read",
+                    "https://graph.microsoft.com/Bookings.Read.All",
+                    "https://graph.microsoft.com/Bookings.Manage.All",
+                    "https://graph.microsoft.com/Bookings.ReadWrite.All",
+                    "https://graph.microsoft.com/BookingsAppointment.ReadWrite.All"
                 ]
             }
 

@@ -10,8 +10,8 @@ Authorization: Bearer {{accessToken}}
 
 ### Fetch business by id
 # @name business
-@id = {{businesses.response.body.value[0].id}}
-GET {{endpoint}}/bookingBusinesses/{{id}} HTTP/1.1
+@firstId = {{businesses.response.body.value[0].id}}
+GET {{endpoint}}/bookingBusinesses/{{firstId}} HTTP/1.1
 Content-type: application/json
 Authorization: Bearer {{accessToken}}
 

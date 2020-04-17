@@ -1,6 +1,7 @@
 ﻿using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace BookingApi
@@ -11,10 +12,14 @@ namespace BookingApi
 		{
 			Console.WriteLine("Booking Api");
 
+			var interactiveLogon = false;
+
 			// TODO: Set following variables correctly
 			var clientId = "";
 			var tenantId = "";
 			var loginHint = "booking-service-account@demodomain.onmicrosoft.com";
+			using var password = new NetworkCredential(string.Empty, 
+				"booking-service-account's password here").SecurePassword;
 
 			var scopes = new List<string> 
 			{
@@ -35,7 +40,16 @@ namespace BookingApi
 			}
 			catch (MsalUiRequiredException)
 			{
-				authenticationResult = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
+				if (interactiveLogon)
+				{
+					// Use interactive login
+					authenticationResult = await app.AcquireTokenInteractive(scopes).ExecuteAsync();
+				}
+				else
+				{
+					// Use username and password
+					authenticationResult = await app.AcquireTokenByUsernamePassword(scopes, loginHint, password).ExecuteAsync();
+				}
 			}
 
 			var accessToken = authenticationResult.AccessToken;
